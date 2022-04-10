@@ -3,7 +3,8 @@ import logging
 from typing import Any
 
 from solax import real_time_api
-from solax.inverter import DiscoveryError
+from solax.discovery import DiscoveryError
+from solax.inverter import InverterResponse
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -29,11 +30,10 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 async def validate_api(data) -> str:
     """Validate the credentials."""
-
     api = await real_time_api(
         data[CONF_IP_ADDRESS], data[CONF_PORT], data[CONF_PASSWORD]
     )
-    response = await api.get_data()
+    response = await api.get_data()  # type: InverterResponse
     return response.serial_number
 
 

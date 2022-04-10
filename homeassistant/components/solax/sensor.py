@@ -4,7 +4,9 @@ from __future__ import annotations
 import asyncio
 from datetime import timedelta
 
+from solax import RealTimeAPI
 from solax.inverter import InverterError
+from solax.units import Monotonic, Units
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -12,7 +14,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers.entity import DeviceInfo
@@ -31,7 +32,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Entry setup."""
-    api = hass.data[DOMAIN][entry.entry_id]
+    api = hass.data[DOMAIN][entry.entry_id]  # type: RealTimeAPI
     resp = await api.get_data()
     serial = resp.serial_number
     version = resp.version
@@ -41,28 +42,38 @@ async def async_setup_entry(
     devices = []
     for sensor, (idx, unit) in api.inverter.sensor_map().items():
         device_class = state_class = None
-        if unit == "C":
-            device_class = SensorDeviceClass.TEMPERATURE
-            state_class = SensorStateClass.MEASUREMENT
-            unit = TEMP_CELSIUS
-        elif unit == "kWh":
-            device_class = SensorDeviceClass.ENERGY
+
+        if isinstance(unit, Monotonic):
             state_class = SensorStateClass.TOTAL_INCREASING
-        elif unit == "V":
+        else:
+            state_class = SensorStateClass.MEASUREMENT
+
+        if unit.unit == Units.C:
+            device_class = SensorDeviceClass.TEMPERATURE
+        elif unit == Units.KWH:
+            device_class = SensorDeviceClass.ENERGY
+        elif unit == Units.V:
             device_class = SensorDeviceClass.VOLTAGE
-            state_class = SensorStateClass.MEASUREMENT
-        elif unit == "A":
+        elif unit == Units.A:
             device_class = SensorDeviceClass.CURRENT
-            state_class = SensorStateClass.MEASUREMENT
-        elif unit == "W":
+        elif unit == Units.W:
             device_class = SensorDeviceClass.POWER
-            state_class = SensorStateClass.MEASUREMENT
-        elif unit == "%":
+        elif unit == Units.PERCENT:
             device_class = SensorDeviceClass.BATTERY
-            state_class = SensorStateClass.MEASUREMENT
+
         uid = f"{serial}-{idx}"
+
         devices.append(
-            Inverter(uid, serial, version, sensor, unit, state_class, device_class)
+            InverterEntity(
+                api.inverter.manufacturer,
+                uid,
+                serial,
+                version,
+                sensor,
+                unit.unit.value,
+                state_class,
+                device_class,
+            )
         )
     endpoint.sensors = devices
     async_add_entities(devices)
@@ -71,12 +82,12 @@ async def async_setup_entry(
 class RealTimeDataEndpoint:
     """Representation of a Sensor."""
 
-    def __init__(self, hass, api):
+    def __init__(self, hass: HomeAssistant, api: RealTimeAPI) -> None:
         """Initialize the sensor."""
-        self.hass = hass
+        self.hass: HomeAssistant = hass
         self.api = api
         self.ready = asyncio.Event()
-        self.sensors = []
+        self.sensors: list[InverterEntity] = []
 
     async def async_refresh(self, now=None):
         """Fetch new state data for the sensor.
@@ -98,13 +109,14 @@ class RealTimeDataEndpoint:
                 sensor.async_schedule_update_ha_state()
 
 
-class Inverter(SensorEntity):
+class InverterEntity(SensorEntity):
     """Class for a sensor."""
 
     _attr_should_poll = False
 
     def __init__(
         self,
+        manufacturer,
         uid,
         serial,
         version,
@@ -115,14 +127,14 @@ class Inverter(SensorEntity):
     ):
         """Initialize an inverter sensor."""
         self._attr_unique_id = uid
-        self._attr_name = f"Solax {serial} {key}"
+        self._attr_name = f"{manufacturer} {serial} {key}"
         self._attr_native_unit_of_measurement = unit
         self._attr_state_class = state_class
         self._attr_device_class = device_class
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, serial)},
             manufacturer=MANUFACTURER,
-            name=f"Solax {serial}",
+            name=f"{manufacturer} {serial}",
             sw_version=version,
         )
         self.key = key

@@ -2179,7 +2179,7 @@ solaredge-local==0.2.0
 solaredge==0.0.2
 
 # homeassistant.components.solax
-solax==0.2.9
+solax@git+https://github.com/VadimKraus/solax.git@feature/units
 
 # homeassistant.components.honeywell
 somecomfort==0.8.0
