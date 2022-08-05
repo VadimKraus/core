@@ -4,17 +4,19 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components import (
+    button,
     cover,
     fan,
     image_processing,
+    input_button,
     input_number,
     light,
     timer,
     vacuum,
 )
 from homeassistant.components.alarm_control_panel import (
-    FORMAT_NUMBER,
     AlarmControlPanelEntityFeature,
+    CodeFormat,
 )
 import homeassistant.components.climate.const as climate
 import homeassistant.components.media_player.const as media_player
@@ -72,8 +74,6 @@ class AlexaCapability:
 
     https://developer.amazon.com/docs/device-apis/message-guide.html
     """
-
-    # pylint: disable=no-self-use
 
     supported_locales = {"en-US"}
 
@@ -379,7 +379,7 @@ class AlexaPowerController(AlexaCapability):
             raise UnsupportedProperty(name)
 
         if self.entity.domain == climate.DOMAIN:
-            is_on = self.entity.state != climate.HVAC_MODE_OFF
+            is_on = self.entity.state != climate.HVACMode.OFF
         elif self.entity.domain == fan.DOMAIN:
             is_on = self.entity.state == fan.STATE_ON
         elif self.entity.domain == vacuum.DOMAIN:
@@ -903,6 +903,7 @@ class AlexaContactSensor(AlexaCapability):
         "en-CA",
         "en-IN",
         "en-US",
+        "en-GB",
         "es-ES",
         "it-IT",
         "ja-JP",
@@ -951,6 +952,7 @@ class AlexaMotionSensor(AlexaCapability):
         "en-CA",
         "en-IN",
         "en-US",
+        "en-GB",
         "es-ES",
         "it-IT",
         "ja-JP",
@@ -1046,6 +1048,8 @@ class AlexaThermostatController(AlexaCapability):
 
             if preset in API_THERMOSTAT_PRESETS:
                 mode = API_THERMOSTAT_PRESETS[preset]
+            elif self.entity.state == STATE_UNKNOWN:
+                return None
             else:
                 mode = API_THERMOSTAT_MODES.get(self.entity.state)
                 if mode is None:
@@ -1226,7 +1230,7 @@ class AlexaSecurityPanelController(AlexaCapability):
 
         configuration["supportedArmStates"] = supported_arm_states
 
-        if code_format == FORMAT_NUMBER:
+        if code_format == CodeFormat.NUMBER:
             configuration["supportedAuthorizationTypes"] = [{"type": "FOUR_DIGIT_PIN"}]
 
         return configuration
@@ -1893,7 +1897,10 @@ class AlexaEventDetectionSensor(AlexaCapability):
         if self.entity.domain == image_processing.DOMAIN:
             if int(state):
                 human_presence = "DETECTED"
-        elif state == STATE_ON:
+        elif state == STATE_ON or self.entity.domain in [
+            input_button.DOMAIN,
+            button.DOMAIN,
+        ]:
             human_presence = "DETECTED"
 
         return {"value": human_presence}
@@ -1905,7 +1912,8 @@ class AlexaEventDetectionSensor(AlexaCapability):
             "detectionModes": {
                 "humanPresence": {
                     "featureAvailability": "ENABLED",
-                    "supportsNotDetected": True,
+                    "supportsNotDetected": self.entity.domain
+                    not in [input_button.DOMAIN, button.DOMAIN],
                 }
             },
         }

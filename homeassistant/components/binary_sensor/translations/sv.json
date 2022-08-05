@@ -17,6 +17,7 @@
             "is_no_problem": "{entity_name} uppt\u00e4cker inte problem",
             "is_no_smoke": "{entity_name} detekterar inte r\u00f6k",
             "is_no_sound": "{entity_name} uppt\u00e4cker inte ljud",
+            "is_no_update": "{entity_name} \u00e4r uppdaterad",
             "is_no_vibration": "{entity_name} uppt\u00e4cker inte vibrationer",
             "is_not_bat_low": "{entity_name} batteri \u00e4r normalt",
             "is_not_cold": "{entity_name} \u00e4r inte kall",
@@ -36,12 +37,14 @@
             "is_on": "{entity_name} \u00e4r p\u00e5",
             "is_open": "{entity_name} \u00e4r \u00f6ppen",
             "is_plugged_in": "{entity_name} \u00e4r ansluten",
-            "is_powered": "{entity_name} \u00e4r str\u00f6mf\u00f6rd",
+            "is_powered": "{entity_name} \u00e4r p\u00e5slagen",
             "is_present": "{entity_name} \u00e4r n\u00e4rvarande",
             "is_problem": "{entity_name} uppt\u00e4cker problem",
+            "is_running": "{entity_name} k\u00f6rs",
             "is_smoke": "{entity_name} detekterar r\u00f6k",
             "is_sound": "{entity_name} uppt\u00e4cker ljud",
             "is_unsafe": "{entity_name} \u00e4r os\u00e4ker",
+            "is_update": "{entity_name} har en uppdatering tillg\u00e4nglig",
             "is_vibration": "{entity_name} uppt\u00e4cker vibrationer"
         },
         "trigger_type": {
@@ -61,6 +64,7 @@
             "no_problem": "{entity_name} slutade uppt\u00e4cka problem",
             "no_smoke": "{entity_name} slutade detektera r\u00f6k",
             "no_sound": "{entity_name} slutade uppt\u00e4cka ljud",
+            "no_update": "{entity_name} blev uppdaterad",
             "no_vibration": "{entity_name} slutade uppt\u00e4cka vibrationer",
             "not_bat_low": "{entity_name} batteri normalt",
             "not_cold": "{entity_name} blev inte kall",
@@ -72,13 +76,13 @@
             "not_occupied": "{entity_name} blev inte upptagen",
             "not_opened": "{entity_name} st\u00e4ngd",
             "not_plugged_in": "{entity_name} urkopplad",
-            "not_powered": "{entity_name} inte str\u00f6mf\u00f6rd",
+            "not_powered": "{entity_name} inte p\u00e5slagen",
             "not_present": "{entity_name} inte n\u00e4rvarande",
             "not_unsafe": "{entity_name} blev s\u00e4ker",
             "occupied": "{entity_name} blev upptagen",
             "opened": "{entity_name} \u00f6ppnades",
             "plugged_in": "{entity_name} ansluten",
-            "powered": "{entity_name} str\u00f6mf\u00f6rd",
+            "powered": "{entity_name} p\u00e5slagen",
             "present": "{entity_name} n\u00e4rvarande",
             "problem": "{entity_name} b\u00f6rjade uppt\u00e4cka problem",
             "smoke": "{entity_name} b\u00f6rjade detektera r\u00f6k",
@@ -86,11 +90,15 @@
             "turned_off": "{entity_name} st\u00e4ngdes av",
             "turned_on": "{entity_name} slogs p\u00e5",
             "unsafe": "{entity_name} blev os\u00e4ker",
+            "update": "{entity_name} har en uppdatering tillg\u00e4nglig",
             "vibration": "{entity_name} b\u00f6rjade detektera vibrationer"
         }
     },
     "device_class": {
-        "motion": "r\u00f6relse"
+        "cold": "Kyla",
+        "heat": "v\u00e4rme",
+        "motion": "r\u00f6relse",
+        "power": "effekt"
     },
     "state": {
         "_": {
@@ -100,6 +108,10 @@
         "battery": {
             "off": "Normal",
             "on": "L\u00e5g"
+        },
+        "battery_charging": {
+            "off": "Laddar inte",
+            "on": "Laddar"
         },
         "cold": {
             "off": "Normal",
@@ -118,12 +130,16 @@
             "on": "\u00d6ppen"
         },
         "gas": {
-            "off": "Klart",
+            "off": "Rensa",
             "on": "Detekterad"
         },
         "heat": {
             "off": "Normal",
             "on": "Varmt"
+        },
+        "light": {
+            "off": "Inget ljus",
+            "on": "Ljus uppt\u00e4ckt"
         },
         "lock": {
             "off": "L\u00e5st",
@@ -137,6 +153,10 @@
             "off": "Klart",
             "on": "Detekterad"
         },
+        "moving": {
+            "off": "R\u00f6r sig inte",
+            "on": "R\u00f6r p\u00e5 sig"
+        },
         "occupancy": {
             "off": "Tomt",
             "on": "Detekterad"
@@ -145,6 +165,10 @@
             "off": "St\u00e4ngd",
             "on": "\u00d6ppen"
         },
+        "plug": {
+            "off": "Urkopplad",
+            "on": "Inkopplad"
+        },
         "presence": {
             "off": "Borta",
             "on": "Hemma"
@@ -152,6 +176,10 @@
         "problem": {
             "off": "Ok",
             "on": "Problem"
+        },
+        "running": {
+            "off": "K\u00f6r inte",
+            "on": "K\u00f6rs"
         },
         "safety": {
             "off": "S\u00e4ker",
@@ -165,8 +193,12 @@
             "off": "Klart",
             "on": "Detekterad"
         },
+        "update": {
+            "off": "Uppdaterad",
+            "on": "Uppdatering tillg\u00e4nglig"
+        },
         "vibration": {
-            "off": "Klart",
+            "off": "Rensa",
             "on": "Detekterad"
         },
         "window": {

@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+from typing import Any
 
 import voluptuous as vol
 import yeelight
@@ -21,18 +22,11 @@ from homeassistant.components.light import (
     ATTR_KELVIN,
     ATTR_RGB_COLOR,
     ATTR_TRANSITION,
-    COLOR_MODE_BRIGHTNESS,
-    COLOR_MODE_COLOR_TEMP,
-    COLOR_MODE_HS,
-    COLOR_MODE_ONOFF,
-    COLOR_MODE_RGB,
-    COLOR_MODE_UNKNOWN,
     FLASH_LONG,
     FLASH_SHORT,
-    SUPPORT_EFFECT,
-    SUPPORT_FLASH,
-    SUPPORT_TRANSITION,
+    ColorMode,
     LightEntity,
+    LightEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_MODE, CONF_NAME
@@ -72,8 +66,6 @@ from .const import (
 from .entity import YeelightEntity
 
 _LOGGER = logging.getLogger(__name__)
-
-SUPPORT_YEELIGHT = SUPPORT_TRANSITION | SUPPORT_FLASH | SUPPORT_EFFECT
 
 ATTR_MINUTES = "minutes"
 
@@ -413,8 +405,13 @@ def _async_setup_services(hass: HomeAssistant):
 class YeelightGenericLight(YeelightEntity, LightEntity):
     """Representation of a Yeelight generic light."""
 
-    _attr_color_mode: str | None = COLOR_MODE_BRIGHTNESS
-    _attr_supported_color_modes: set[str] | None = {COLOR_MODE_BRIGHTNESS}
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+    _attr_supported_features = (
+        LightEntityFeature.TRANSITION
+        | LightEntityFeature.FLASH
+        | LightEntityFeature.EFFECT
+    )
     _attr_should_poll = False
 
     def __init__(self, device, entry, custom_effects=None):
@@ -446,7 +443,7 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
             self._async_cancel_pending_state_check()
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Handle entity which will be added."""
         self.async_on_remove(
             async_dispatcher_connect(
@@ -456,11 +453,6 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
             )
         )
         await super().async_added_to_hass()
-
-    @property
-    def supported_features(self) -> int:
-        """Flag supported features."""
-        return SUPPORT_YEELIGHT
 
     @property
     def effect_list(self):
@@ -594,7 +586,7 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
         """Return yeelight device."""
         return self._device
 
-    async def async_update(self):
+    async def async_update(self) -> None:
         """Update light properties."""
         await self.device.async_update(True)
 
@@ -640,12 +632,12 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
         if (
             not hs_color
             or not self.supported_color_modes
-            or COLOR_MODE_HS not in self.supported_color_modes
+            or ColorMode.HS not in self.supported_color_modes
         ):
             return
         if (
             not self.device.is_color_flow_enabled
-            and self.color_mode == COLOR_MODE_HS
+            and self.color_mode == ColorMode.HS
             and self.hs_color == hs_color
         ):
             _LOGGER.debug("HS already set to: %s", hs_color)
@@ -665,12 +657,12 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
         if (
             not rgb
             or not self.supported_color_modes
-            or COLOR_MODE_RGB not in self.supported_color_modes
+            or ColorMode.RGB not in self.supported_color_modes
         ):
             return
         if (
             not self.device.is_color_flow_enabled
-            and self.color_mode == COLOR_MODE_RGB
+            and self.color_mode == ColorMode.RGB
             and self.rgb_color == rgb
         ):
             _LOGGER.debug("RGB already set to: %s", rgb)
@@ -690,14 +682,14 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
         if (
             not colortemp
             or not self.supported_color_modes
-            or COLOR_MODE_COLOR_TEMP not in self.supported_color_modes
+            or ColorMode.COLOR_TEMP not in self.supported_color_modes
         ):
             return
         temp_in_k = mired_to_kelvin(colortemp)
 
         if (
             not self.device.is_color_flow_enabled
-            and self.color_mode == COLOR_MODE_COLOR_TEMP
+            and self.color_mode == ColorMode.COLOR_TEMP
             and self.color_temp == colortemp
         ):
             _LOGGER.debug("Color temp already set to: %s", temp_in_k)
@@ -783,7 +775,7 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
             power_mode=self._turn_on_power_mode,
         )
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the bulb on."""
         brightness = kwargs.get(ATTR_BRIGHTNESS)
         colortemp = kwargs.get(ATTR_COLOR_TEMP)
@@ -845,7 +837,7 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
         """Turn off with a given transition duration wrapped with _async_cmd."""
         await self._bulb.async_turn_off(duration=duration, light_type=self.light_type)
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off."""
         if not self.is_on:
             return
@@ -882,31 +874,31 @@ class YeelightGenericLight(YeelightEntity, LightEntity):
 class YeelightColorLightSupport(YeelightGenericLight):
     """Representation of a Color Yeelight light support."""
 
-    _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP, COLOR_MODE_HS, COLOR_MODE_RGB}
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.HS, ColorMode.RGB}
 
     @property
-    def color_mode(self):
+    def color_mode(self) -> ColorMode:
         """Return the color mode."""
         color_mode = int(self._get_property("color_mode"))
         if color_mode == 1:  # RGB
-            return COLOR_MODE_RGB
+            return ColorMode.RGB
         if color_mode == 2:  # color temperature
-            return COLOR_MODE_COLOR_TEMP
+            return ColorMode.COLOR_TEMP
         if color_mode == 3:  # hsv
-            return COLOR_MODE_HS
+            return ColorMode.HS
         _LOGGER.debug("Light reported unknown color mode: %s", color_mode)
-        return COLOR_MODE_UNKNOWN
+        return ColorMode.UNKNOWN
 
     @property
     def _predefined_effects(self):
         return YEELIGHT_COLOR_EFFECT_LIST
 
 
-class YeelightWhiteTempLightSupport:
+class YeelightWhiteTempLightSupport(YeelightGenericLight):
     """Representation of a White temp Yeelight light."""
 
-    _attr_color_mode: str | None = COLOR_MODE_COLOR_TEMP
-    _attr_supported_color_modes: set[str] | None = {COLOR_MODE_COLOR_TEMP}
+    _attr_color_mode = ColorMode.COLOR_TEMP
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP}
 
     @property
     def _predefined_effects(self):
@@ -985,8 +977,8 @@ class YeelightWithNightLight(
 class YeelightNightLightMode(YeelightGenericLight):
     """Representation of a Yeelight when in nightlight mode."""
 
-    _attr_color_mode = COLOR_MODE_BRIGHTNESS
-    _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
 
     @property
     def unique_id(self) -> str:
@@ -1037,8 +1029,8 @@ class YeelightNightLightModeWithoutBrightnessControl(YeelightNightLightMode):
     It represents case when nightlight mode brightness control is not supported.
     """
 
-    _attr_color_mode = COLOR_MODE_ONOFF
-    _attr_supported_color_modes = {COLOR_MODE_ONOFF}
+    _attr_color_mode = ColorMode.ONOFF
+    _attr_supported_color_modes = {ColorMode.ONOFF}
 
 
 class YeelightWithAmbientWithoutNightlight(YeelightWhiteTempWithoutNightlightSwitch):

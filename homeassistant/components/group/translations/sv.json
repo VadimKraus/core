@@ -10,58 +10,56 @@
                 "title": "Ny grupp"
             },
             "cover": {
-                "data": {
-                    "title": "Ny grupp"
-                }
+                "title": "L\u00e4gg till grupp"
             },
             "fan": {
-                "data": {
-                    "title": "Ny grupp"
-                }
+                "title": "L\u00e4gg till grupp"
             },
             "light": {
+                "title": "L\u00e4gg till grupp"
+            },
+            "lock": {
                 "data": {
-                    "title": "Ny grupp"
-                }
+                    "entities": "Medlemmar",
+                    "hide_members": "D\u00f6lj medlemmar",
+                    "name": "Namn"
+                },
+                "title": "L\u00e4gg till grupp"
             },
             "media_player": {
+                "title": "L\u00e4gg till grupp"
+            },
+            "switch": {
                 "data": {
-                    "title": "Ny grupp"
-                }
+                    "name": "Namn"
+                },
+                "title": "L\u00e4gg till grupp"
             },
             "user": {
-                "data": {
-                    "group_type": "Grupptyp"
+                "menu_options": {
+                    "lock": "L\u00e5sgrupp"
                 },
-                "title": "Ny grupp"
+                "title": "L\u00e4gg till grupp"
             }
         }
     },
     "options": {
         "step": {
-            "binary_sensor_options": {
+            "binary_sensor": {
                 "data": {
                     "all": "Alla entiteter",
                     "entities": "Medlemmar"
                 }
             },
-            "cover_options": {
+            "lock": {
                 "data": {
-                    "entities": "Medlemmar"
+                    "entities": "Medlemmar",
+                    "hide_members": "D\u00f6lj medlemmar"
                 }
             },
-            "fan_options": {
+            "switch": {
                 "data": {
-                    "entities": "Medlemmar"
-                }
-            },
-            "light_options": {
-                "data": {
-                    "entities": "Medlemmar"
-                }
-            },
-            "media_player_options": {
-                "data": {
+                    "all": "Alla entiteter",
                     "entities": "Medlemmar"
                 }
             }
